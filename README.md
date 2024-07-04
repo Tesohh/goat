@@ -11,5 +11,22 @@ Under the hood it uses `net/http` to serve and [`swagno`](https://github.com/go-
 
 # Usage (draft)
 ```go
+package main
 
+type HelloParams struct {
+	Name string `goat:"name,query"`
+}
+
+helloHandler := goat.Route {
+	Route: "/",
+	Method: http.MethodGET,
+	Description: "Greets someone",
+	Params: HelloParams {},
+	ParamsDescriptions: {
+		"Name": "Name of the person to greet"
+	},
+	Handler: func (c *goat.Context[HelloParams]) (goat.Response[string], error) {
+		return goat.NewResponse(200, fmt.Sprintf("Hello, %s!", c.Params.Name)), nil
+	}
+}
 ```

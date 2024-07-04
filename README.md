@@ -33,7 +33,7 @@ helloHandler := goat.Route[HelloParams, string] {
 func main() {
 	s := goat.NewServer()
 	s.AddHandler(helloHandler)
-	go s.ServeSwagger("/swagger")
+	s.AddSwagger("/swagger")
 	s.Serve(":8080")
 }
 ```

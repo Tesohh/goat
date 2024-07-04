@@ -17,7 +17,7 @@ type HelloParams struct {
 	Name string `goat:"name,query"`
 }
 
-helloHandler := goat.Route {
+helloHandler := goat.Route[HelloParams, string] {
 	Route: "/",
 	Method: http.MethodGET,
 	Description: "Greets someone",
@@ -33,6 +33,7 @@ helloHandler := goat.Route {
 func main() {
 	s := goat.NewServer()
 	s.AddHandler(helloHandler)
-	s.Serve(":8080")	
+	go s.ServeSwagger("/swagger")
+	s.Serve(":8080")
 }
 ```

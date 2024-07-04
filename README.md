@@ -29,4 +29,10 @@ helloHandler := goat.Route {
 		return goat.NewResponse(200, fmt.Sprintf("Hello, %s!", c.Params.Name)), nil
 	}
 }
+
+func main() {
+	s := goat.NewServer()
+	s.AddHandler(helloHandler)
+	s.Serve(":8080")	
+}
 ```

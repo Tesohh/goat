@@ -7,11 +7,11 @@ import (
 )
 
 type HelloParams struct {
-	Name string
+	Name string `goat:"name,path"`
 }
 
 var hellohtml = goat.Route[HelloParams, string]{
-	Path:               "/html",
+	Path:               "/html/{name}",
 	Method:             "GET",
 	Description:        "Hello.html",
 	ParamsDescriptions: map[string]string{},
@@ -23,7 +23,7 @@ var hellohtml = goat.Route[HelloParams, string]{
 }
 
 var hellojson = goat.Route[HelloParams, string]{
-	Path:               "/json",
+	Path:               "/json/{name}",
 	Method:             "GET",
 	Description:        "Hello.json",
 	ParamsDescriptions: map[string]string{},

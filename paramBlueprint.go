@@ -2,6 +2,7 @@ package goat
 
 import (
 	"fmt"
+	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
@@ -19,29 +20,52 @@ type fieldBlueprint struct {
 // 	return fmt.Sprintf("{ %s:%s [sample: %v] getFrom:%s }", b.FieldName, b.ParamName, b.Sample, b.GetFrom)
 // }
 
-func (b fieldBlueprint) CastInt(s string) (int, error) {
-	if b.Type.Kind() == reflect.Int {
+func (b fieldBlueprint) Cast(s string) (any, error) {
+	switch b.Type.Kind() {
+	case reflect.Int:
 		return strconv.Atoi(s)
-	} else {
-		return 0, fmt.Errorf("can't cast to int a %s", b.Type.Kind())
-	}
-}
-
-func (b fieldBlueprint) CastFloat64(s string) (float64, error) {
-	if b.Type.Kind() == reflect.Float64 {
+	case reflect.Float64:
 		return strconv.ParseFloat(s, 64)
-	} else {
-		return 0, fmt.Errorf("can't cast to float64 a %s", b.Type.Kind())
-	}
-}
-
-func (b fieldBlueprint) CastFloat32(s string) (float32, error) {
-	if b.Type.Kind() == reflect.Float32 {
+	case reflect.Float32:
 		value, err := strconv.ParseFloat(s, 32)
 		return float32(value), err
-	} else {
-		return 0, fmt.Errorf("can't cast to float32 a %s", b.Type.Kind())
+	case reflect.String:
+		return s, nil
 	}
+
+	// TODO: go has a reflect.Convert function
+
+	return reflect.Zero(b.Type).Interface(), fmt.Errorf("cannot cast from string to %s", b.Type.Kind())
+}
+
+func (b fieldBlueprint) SetField(params reflect.Value, s *Server, r *http.Request) error {
+	field := params.FieldByName(b.FieldName)
+
+	if !field.IsValid() {
+		return fmt.Errorf("field %s is invalid", b.FieldName)
+	}
+	if !field.CanSet() {
+		return fmt.Errorf("cannot set params field %s", b.FieldName)
+	}
+
+	if b.GetFrom == "query" {
+		rawQuery := r.URL.Query().Get(b.ParamName)
+
+		castedValue, err := b.Cast(rawQuery)
+		if err != nil {
+			return err
+		}
+
+		field.Set(reflect.ValueOf(castedValue))
+	} else if b.GetFrom == "path" {
+		panic("not implemented")
+	} else if b.GetFrom == "body" {
+		panic("not implemented")
+	} else {
+		fmt.Println("Unknown GetFrom option", b.GetFrom)
+	}
+
+	return nil
 }
 
 func compileBlueprints(v any) []fieldBlueprint {

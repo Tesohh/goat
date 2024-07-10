@@ -1,0 +1,4 @@
+- [ ] add swagger support
+- [ ] add middleware support
+- [ ] add some sort of route grouping (also useful for swagger)
+- [ ] add required fields checking

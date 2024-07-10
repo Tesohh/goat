@@ -14,20 +14,26 @@ Most of the reflection is done at "startup-time", while the "request-time" refle
 ```go
 package main
 
+type HelloBody struct {
+	Title string `json:"title"`
+}
+
 type HelloParams struct {
-	Name string `goat:"name,query"`
+	Name string // by default, will get name from the query parameters
+	Surname string `goat:"surname,path"` // if you want to get it from the path, you need to specify it with a struct tag
+	HelloBody // Struct embedding works great here. This will be parsed as JSON from the body of the request.
 }
 
 helloHandler := goat.Route[HelloParams, string] {
-	Route: "/",
+	Route: "/{surname}",
 	Method: http.MethodGET,
 	Description: "Greets someone",
 	Params: HelloParams {},
 	ParamsDescriptions: {
-		"Name": "Name of the person to greet"
+		"Name": "Name of the person to greet",
 	},
 	Handler: func (c *goat.Context[HelloParams]) (goat.Response[string], error) {
-		return goat.NewResponse(200, fmt.Sprintf("Hello, %s!", c.Params.Name)), nil
+		return goat.NewResponse(200, fmt.Sprintf("Hello, %s %s!", c.Params.Title, c.Params.Name)), nil
 	}
 }
 

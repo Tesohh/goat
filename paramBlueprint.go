@@ -1,6 +1,7 @@
 package goat
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -51,16 +52,33 @@ func (b fieldBlueprint) SetField(params reflect.Value, s *Server, r *http.Reques
 	if b.GetFrom == "query" {
 		raw := r.URL.Query().Get(b.ParamName)
 
-		castedValue, err := b.Cast(raw)
+		v, err := b.Cast(raw)
+		if err != nil {
+			return err
+		}
+		field.Set(reflect.ValueOf(v))
+	} else if b.GetFrom == "path" {
+		raw := r.PathValue(b.ParamName)
+
+		v, err := b.Cast(raw)
+		if err != nil {
+			return err
+		}
+		field.Set(reflect.ValueOf(v))
+	} else if b.GetFrom == "body" {
+
+		if r.Body == nil {
+			return fmt.Errorf("body is empty")
+		}
+
+		structField := params.FieldByName(b.FieldName)
+		v := reflect.New(structField.Type()).Interface()
+		err := json.NewDecoder(r.Body).Decode(&v)
 		if err != nil {
 			return err
 		}
 
-		field.Set(reflect.ValueOf(castedValue))
-	} else if b.GetFrom == "path" {
-		panic("not implemented")
-	} else if b.GetFrom == "body" {
-		panic("not implemented")
+		field.Set(reflect.ValueOf(v).Elem())
 	} else {
 		fmt.Println("Unknown GetFrom option", b.GetFrom)
 	}
@@ -99,9 +117,6 @@ func compileBlueprints(v any) []fieldBlueprint {
 			}
 		}
 
-		// if reflect.Zero(field.Type).CanInterface() {
-		// 	bp.Sample = reflect.Zero(field.Type).Interface()
-		// }
 		bp.Type = field.Type
 
 		blueprints = append(blueprints, bp)

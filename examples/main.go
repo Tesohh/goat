@@ -1,32 +1,42 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/Tesohh/goat"
 )
 
-type Z struct {
-	x1 int
-	x2 int
+type HelloParams struct {
+	Name string
 }
 
-type TestGoatType struct {
-	X int    `goat:"x"`
-	Y string `goat:"y,query"`
-	// Z
+var hellohtml = goat.Route[HelloParams, string]{
+	Path:               "/html",
+	Method:             "GET",
+	Description:        "Hello.html",
+	ParamsDescriptions: map[string]string{},
+	Handler: func(c *goat.Context[HelloParams]) (int, *string, error) {
+		var s = fmt.Sprintf("<h1>hello %s</h1>", c.Params.Name)
+		return 200, &s, nil
+	},
+	OverrideEncoder: goat.HTMLEncoder,
+}
+
+var hellojson = goat.Route[HelloParams, string]{
+	Path:               "/json",
+	Method:             "GET",
+	Description:        "Hello.json",
+	ParamsDescriptions: map[string]string{},
+	Handler: func(c *goat.Context[HelloParams]) (int, *string, error) {
+		var s = fmt.Sprintf("hello %s", c.Params.Name)
+		return 200, &s, nil
+	},
+	OverrideEncoder: goat.JSONEncoder,
 }
 
 func main() {
-	route := goat.Route[TestGoatType, string]{
-		Path:               "/tubre",
-		Method:             "GET",
-		Description:        "Tubreeee",
-		ParamsDescriptions: map[string]string{},
-		Handler: func(c *goat.Context[TestGoatType]) (int, *string, error) {
-			var s = "wfw"
-			return 200, &s, nil
-		},
-	}
 	server := goat.NewServer()
-	server.AddController(route)
+	server.AddController(hellohtml)
+	server.AddController(hellojson)
 	server.Listen(":8080")
 }

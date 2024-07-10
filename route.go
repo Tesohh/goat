@@ -1,7 +1,6 @@
 package goat
 
 import (
-	"fmt"
 	"net/http"
 	"reflect"
 )
@@ -19,6 +18,9 @@ type Route[Params any, Return any] struct {
 	ParamsDescriptions map[string]string
 	Handler            func(c *Context[Params]) (status int, v *Return, err error)
 
+	OverrideErrorHandler ErrorHandlerFunc
+	OverrideEncoder      EncoderFunc
+
 	blueprints []fieldBlueprint
 }
 
@@ -33,34 +35,49 @@ func (Route[Params, Return]) GenerateSwagger() ([]byte, error) {
 func (route Route[Params, Return]) MakeHandlerFunc(s *Server) http.HandlerFunc {
 	var sampleParams Params
 	route.blueprints = compileBlueprints(sampleParams)
-	// fmt.Printf("%#v", route.blueprints)
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		params := reflect.ValueOf(&sampleParams).Elem()
+		// Reflect (if any blueprints exist)
+		var params reflect.Value
+		if len(route.blueprints) > 0 { // optimisation
+			params = reflect.ValueOf(&sampleParams).Elem()
+		}
 
 		for _, b := range route.blueprints {
 			err := b.SetField(params, s, r)
 			if err != nil {
-				s.DefaultErrorHandler(400, err, w)
+				if route.OverrideErrorHandler != nil {
+					route.OverrideErrorHandler(w, 400, err)
+				} else {
+					s.ErrorHandler(w, 400, err)
+				}
 				return
 			}
 		}
 
-		// TEMP
-		fmt.Printf("%#v\n", sampleParams)
-		return
-		// !TEMP
-
+		// Run route
 		ctx := Context[Params]{Params: sampleParams}
 		status, v, err := route.Handler(&ctx)
+
 		if err != nil {
-			s.DefaultErrorHandler(status, err, w)
+			if route.OverrideErrorHandler != nil {
+				route.OverrideErrorHandler(w, 400, err)
+			} else {
+				s.ErrorHandler(w, status, err)
+			}
 			return
 		}
 
-		if v == nil {
-			return
+		// Respond
+		w.WriteHeader(status)
+		if v != nil {
+			if route.OverrideEncoder != nil {
+				route.OverrideEncoder(w, *v)
+			} else {
+				s.Encoder(w, *v)
+			}
 		}
+
 	}
 }
 

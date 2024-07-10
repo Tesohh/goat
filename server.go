@@ -5,22 +5,24 @@ import (
 	"net/http"
 )
 
+type ErrorHandlerFunc func(http.ResponseWriter, int, error)
+
+type EncoderFunc func(http.ResponseWriter, any) // the any part will receive a value, not a pointer
+
 type Server struct {
 	mux         *http.ServeMux
 	controllers []Controller
 
-	DefaultErrorHandler func(int, error, http.ResponseWriter)
+	ErrorHandler ErrorHandlerFunc
+	Encoder      EncoderFunc
 }
 
 func NewServer() *Server {
 	return &Server{
-		mux:         http.NewServeMux(),
-		controllers: make([]Controller, 0),
-		DefaultErrorHandler: func(i int, err error, w http.ResponseWriter) {
-			// TODO: improve
-			w.WriteHeader(i)
-			fmt.Fprintf(w, "%s", err.Error())
-		},
+		mux:          http.NewServeMux(),
+		controllers:  make([]Controller, 0),
+		ErrorHandler: DefaultErrorHandler,
+		Encoder:      JSONEncoder,
 	}
 }
 

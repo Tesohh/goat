@@ -17,6 +17,7 @@ type Server struct {
 	Encoder      EncoderFunc
 }
 
+// Returns a new pointer to a server, with the goat.DefaultErrorHandler and a goat.JSONEncoder.
 func NewServer() *Server {
 	return &Server{
 		mux:          http.NewServeMux(),

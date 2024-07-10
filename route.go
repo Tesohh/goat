@@ -56,7 +56,7 @@ func (route Route[Params, Return]) MakeHandlerFunc(s *Server) http.HandlerFunc {
 		}
 
 		// Run route
-		ctx := Context[Params]{Params: sampleParams}
+		ctx := Context[Params]{Params: sampleParams, Request: r, Writer: w}
 		status, v, err := route.Handler(&ctx)
 
 		if err != nil {

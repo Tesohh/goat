@@ -49,9 +49,9 @@ func (b fieldBlueprint) SetField(params reflect.Value, s *Server, r *http.Reques
 	}
 
 	if b.GetFrom == "query" {
-		rawQuery := r.URL.Query().Get(b.ParamName)
+		raw := r.URL.Query().Get(b.ParamName)
 
-		castedValue, err := b.Cast(rawQuery)
+		castedValue, err := b.Cast(raw)
 		if err != nil {
 			return err
 		}

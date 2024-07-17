@@ -124,3 +124,11 @@ func compileBlueprints(v any) []fieldBlueprint {
 
 	return blueprints
 }
+
+func (b fieldBlueprint) toSwaggerParam() {
+
+	switch b.Type.Kind() {
+	case reflect.Int:
+	}
+
+}

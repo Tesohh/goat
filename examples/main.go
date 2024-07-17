@@ -40,8 +40,26 @@ var hellojson = goat.Route[HelloParams, string]{
 	OverrideEncoder: goat.JSONEncoder,
 }
 
+var info = goat.ServerInfo{
+	Title:          "Hello Server",
+	Summary:        "Greeter Edge GenAI AR Blockchain Crypto NFT Microservice as a Service",
+	Description:    "Innovative Microservice that uses the power of GenAI to greet users",
+	TermsOfService: "https://example.com",
+	Contact: goat.Contact{
+		Name:  "Elon Must",
+		URL:   "https://example.com",
+		Email: "elonmust@example.com",
+	},
+	License: goat.License{
+		Name:       "Unlicense",
+		Identifier: "Unlicense",
+		URL:        "https://example.com",
+	},
+	Version: "1.0.0",
+}
+
 func main() {
-	server := goat.NewServer()
+	server := goat.NewServer(info)
 	server.AddController(hellohtml)
 	server.AddController(hellojson)
 	server.Listen(":8080")

@@ -15,15 +15,17 @@ type Server struct {
 
 	ErrorHandler ErrorHandlerFunc
 	Encoder      EncoderFunc
+	Info         ServerInfo
 }
 
 // Returns a new pointer to a server, with the goat.DefaultErrorHandler and a goat.JSONEncoder.
-func NewServer() *Server {
+func NewServer(info ServerInfo) *Server {
 	return &Server{
 		mux:          http.NewServeMux(),
 		controllers:  make([]Controller, 0),
 		ErrorHandler: DefaultErrorHandler,
 		Encoder:      JSONEncoder,
+		Info:         info,
 	}
 }
 

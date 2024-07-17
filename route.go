@@ -8,7 +8,6 @@ import (
 type Controller interface {
 	MakeHandlerFunc(*Server) http.HandlerFunc
 	GetPathAndMethod() (string, string)
-	GenerateSwagger() ([]byte, error)
 }
 
 type Route[Params any, Return any] struct {
@@ -28,8 +27,8 @@ func (route Route[Params, Return]) GetPathAndMethod() (string, string) {
 	return route.Path, route.Method
 }
 
-func (Route[Params, Return]) GenerateSwagger() ([]byte, error) {
-	panic("not implemented")
+func (r Route[Params, Return]) GenerateSwagger() error {
+	return nil
 }
 
 func (route Route[Params, Return]) MakeHandlerFunc(s *Server) http.HandlerFunc {
@@ -79,8 +78,4 @@ func (route Route[Params, Return]) MakeHandlerFunc(s *Server) http.HandlerFunc {
 		}
 
 	}
-}
-
-func GenerateSwagger() ([]byte, error) {
-	panic("not implemented")
 }

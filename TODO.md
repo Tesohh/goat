@@ -2,3 +2,4 @@
 - [ ] add middleware support
 - [ ] add some sort of route grouping (also useful for swagger)
 - [ ] add required fields checking
+- [ ] scrap swagno and add custom implementation
